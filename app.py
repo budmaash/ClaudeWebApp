@@ -830,6 +830,61 @@ def results():
     )
 
 
+@app.get("/onboarding")
+@_login_required
+def onboarding():
+    return render_template("onboarding.html")
+
+
+@app.post("/onboarding")
+@_login_required
+def onboarding_post():
+    try:
+        user_id = session["user"]["user_id"]
+    except (KeyError, TypeError):
+        return redirect(url_for("signup"))
+
+    first_name = request.form.get("first_name", "").strip()
+    last_name = request.form.get("last_name", "").strip()
+
+    errors = []
+    if not first_name:
+        errors.append("First name is required.")
+    elif len(first_name) > 255:
+        errors.append("First name must be 255 characters or fewer.")
+    if not last_name:
+        errors.append("Last name is required.")
+    elif len(last_name) > 255:
+        errors.append("Last name must be 255 characters or fewer.")
+
+    if errors:
+        for error in errors:
+            flash(error, "error")
+        return render_template("onboarding.html")
+
+    try:
+        with psycopg2.connect(**DB_CONFIG) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO students (user_id, first_name, last_name)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (user_id) DO NOTHING
+                    """,
+                    (user_id, first_name, last_name),
+                )
+            conn.commit()
+    except psycopg2.OperationalError as exc:
+        app.logger.error("onboarding_post: DB connection failed: %s", exc)
+        abort(500)
+    except psycopg2.Error as exc:
+        app.logger.error("onboarding_post: DB error: %s", exc)
+        flash("Something went wrong saving your information. Please try again.", "error")
+        return render_template("onboarding.html")
+
+    return redirect(url_for("dashboard"))
+
+
 @app.context_processor
 def inject_globals():
     return {

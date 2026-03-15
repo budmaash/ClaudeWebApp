@@ -63,9 +63,15 @@ Set connection details via environment variables (or a `.env` file):
 
 ### Expected schema
 
-The app reads from the following tables:
+The app reads from and writes to the following tables:
 
 ```sql
+-- Users (created on first Auth0 login)
+users (id, auth0_user_id, email, email_verified, role, created_at, last_login_at)
+
+-- Student profiles (created on onboarding, linked to users)
+students (id, user_id REFERENCES users(id), first_name, last_name, created_at)
+
 -- Test hierarchy
 tests    (id, name)
 sections (id, name)
@@ -74,9 +80,6 @@ modules  (id, name)
 -- Questions
 questions (id, test_id, section_id, module_id, test_question_number, correct_answer, question_type_id)
 question_types (id, name)
-
--- Students roster (looked up by first/last name)
-students (id, first_name, last_name)
 ```
 
 And writes to:

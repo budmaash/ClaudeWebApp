@@ -674,8 +674,76 @@ def auth_callback():
     userinfo = token.get("userinfo")
     if not userinfo:
         userinfo = _auth0_client().userinfo()
-    session["user"] = dict(userinfo)
-    return redirect(url_for("dashboard"))
+
+    auth0_user_id = userinfo["sub"]
+    email = userinfo.get("email", "")
+    email_verified = bool(userinfo.get("email_verified", False))
+
+    try:
+        with psycopg2.connect(**DB_CONFIG) as conn:
+            with conn.cursor() as cursor:
+                # Look up existing user
+                cursor.execute(
+                    "SELECT id, role FROM users WHERE auth0_user_id = %s",
+                    (auth0_user_id,),
+                )
+                row = cursor.fetchone()
+
+                if row is None:
+                    # New user — insert, then re-select to get id
+                    cursor.execute(
+                        """
+                        INSERT INTO users (auth0_user_id, email, email_verified, role, last_login_at)
+                        VALUES (%s, %s, %s, 'student', now())
+                        ON CONFLICT (auth0_user_id) DO NOTHING
+                        """,
+                        (auth0_user_id, email, email_verified),
+                    )
+                    conn.commit()
+                    cursor.execute(
+                        "SELECT id, role FROM users WHERE auth0_user_id = %s",
+                        (auth0_user_id,),
+                    )
+                    row = cursor.fetchone()
+                    if row is None:
+                        app.logger.error(
+                            "auth_callback: user row missing after insert for sub=%s", auth0_user_id
+                        )
+                        abort(500)
+                else:
+                    # Returning user — update last_login_at
+                    cursor.execute(
+                        "UPDATE users SET last_login_at = now() WHERE id = %s",
+                        (row[0],),
+                    )
+                    conn.commit()
+
+                user_id, role = row
+
+                session["user"] = {
+                    "user_id": user_id,
+                    "auth0_user_id": auth0_user_id,
+                    "email": email,
+                    "role": role,
+                }
+
+                # Check for existing students row
+                cursor.execute(
+                    "SELECT 1 FROM students WHERE user_id = %s",
+                    (user_id,),
+                )
+                has_student = cursor.fetchone() is not None
+
+    except psycopg2.OperationalError as exc:
+        app.logger.error("auth_callback: DB connection failed: %s", exc)
+        abort(500)
+    except psycopg2.Error as exc:
+        app.logger.error("auth_callback: DB error: %s", exc)
+        abort(500)
+
+    if has_student:
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("onboarding"))
 
 
 @app.get("/entry")

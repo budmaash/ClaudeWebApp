@@ -833,7 +833,7 @@ def results():
 @app.get("/onboarding")
 @_login_required
 def onboarding():
-    return render_template("onboarding.html")
+    return render_template("onboarding.html", first_name="", last_name="")
 
 
 @app.post("/onboarding")
@@ -860,7 +860,7 @@ def onboarding_post():
     if errors:
         for error in errors:
             flash(error, "error")
-        return render_template("onboarding.html")
+        return render_template("onboarding.html", first_name=first_name, last_name=last_name)
 
     try:
         with psycopg2.connect(**DB_CONFIG) as conn:
@@ -880,7 +880,7 @@ def onboarding_post():
     except psycopg2.Error as exc:
         app.logger.error("onboarding_post: DB error: %s", exc)
         flash("Something went wrong saving your information. Please try again.", "error")
-        return render_template("onboarding.html")
+        return render_template("onboarding.html", first_name=first_name, last_name=last_name)
 
     return redirect(url_for("dashboard"))
 

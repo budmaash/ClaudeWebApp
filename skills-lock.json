@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "skills": {
+    "auth0-angular": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "b66495d219aa693289fe90dcf55b165cfd1b4e5a4ba386a6abea40378649a729"
+    },
+    "auth0-express": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "784f51e2d0131e9b45814fbf0e1a88c580797e57de0b6a15875046795a421c58"
+    },
+    "auth0-fastify": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "b3ae3bace85fd4dfd45c0bf28ced3d64d8245c475343d7a7cc7fc9dbd48fdd0d"
+    },
+    "auth0-fastify-api": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "4e4ba91efc93c7fab65f4c12bcedcc89167ab97141a89c4c5f4749f318566006"
+    },
+    "auth0-mfa": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "b4b0a7f7370acdb88c5989f47f1e70568df63d8934d215a1024d61fa47d0b277"
+    },
+    "auth0-migration": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "02b177e06895fc0edbd17d4091e0cdb27adc31ceb42a0e4168787dfbd2d21afe"
+    },
+    "auth0-nextjs": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "56f6c2249069453ef46ebde5db565989065b9aa3e262664b7681ccf740ae5483"
+    },
+    "auth0-nuxt": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "ddac9262b53f51619b3f3581285ae19ba4c049ee78a96bff907a170ef5e92360"
+    },
+    "auth0-quickstart": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "ec826a7e83ba8df85d45aee06db4a1dbe7a887f8a68a40cf88b939ac0266d191"
+    },
+    "auth0-react": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "ffaff5d8c715f0d198af78c140b6a00374d5955ab4cd2b2f4d2019726f5f9de4"
+    },
+    "auth0-react-native": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "cad5877aa55c6e008f3a2282939744ada4e0efd065fa597ad51cadc0c93d084b"
+    },
+    "auth0-vue": {
+      "source": "auth0/agent-skills",
+      "sourceType": "github",
+      "computedHash": "4d32ebad1056019b5abeae0e3c4c464664b343be55601a011351dd5fffa6a335"
+    }
+  }
+}

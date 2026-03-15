@@ -679,6 +679,7 @@ def auth_callback():
     email = userinfo.get("email", "")
     email_verified = bool(userinfo.get("email_verified", False))
 
+    has_student = False
     try:
         with psycopg2.connect(**DB_CONFIG) as conn:
             with conn.cursor() as cursor:
@@ -720,7 +721,7 @@ def auth_callback():
 
                 user_id, role = row
 
-                session["user"] = {
+                user_data = {
                     "user_id": user_id,
                     "auth0_user_id": auth0_user_id,
                     "email": email,
@@ -740,6 +741,8 @@ def auth_callback():
     except psycopg2.Error as exc:
         app.logger.error("auth_callback: DB error: %s", exc)
         abort(500)
+
+    session["user"] = user_data
 
     if has_student:
         return redirect(url_for("dashboard"))

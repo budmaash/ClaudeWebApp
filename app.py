@@ -759,8 +759,6 @@ def results():
     )
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
 @app.context_processor
 def inject_globals():
     return {
@@ -770,3 +768,7 @@ def inject_globals():
         "auth0_login_url": _build_auth0_authorize_url(),
         "auth0_signup_url": _build_auth0_authorize_url(screen_hint="signup"),
     }
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

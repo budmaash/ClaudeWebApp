@@ -23,13 +23,12 @@ load_dotenv()
 
 
 DB_CONFIG = {
-    "host": os.environ.get("SAT_DB_HOST", "localhost"),
-    "port": int(os.environ.get("SAT_DB_PORT", "5432")),
-    "user": os.environ.get("SAT_DB_USER", "postgres"),
-    "password": os.environ.get("SAT_DB_PASSWORD", "3rdtrail"),
-    "dbname": os.environ.get("SAT_DB_NAME", "SAT_Database"),
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "port": int(os.environ.get("DB_PORT", "5432")),
+    "user": os.environ.get("DB_USER", "postgres"),
+    "password": os.environ.get("DB_PASSWORD", ""),
+    "dbname": os.environ.get("DB_NAME", "WebApp"),
 }
-DB_ENABLED = os.environ.get("SAT_DB_ENABLED", "1") not in {"0", "false", "False"}
 MULTIPLE_CHOICE_CHOICES = ("A", "B", "C", "D")
 
 
@@ -129,9 +128,6 @@ class QuestionBank:
     def _available_database_tests(self) -> List[TestDefinition]:
         tests: List[TestDefinition] = []
 
-        if not DB_ENABLED:
-            return tests
-
         try:
             with psycopg2.connect(**DB_CONFIG) as conn:
                 with conn.cursor() as cursor:
@@ -190,9 +186,6 @@ class QuestionBank:
         return questions
 
     def _load_database_questions(self, metadata: DatabaseTestMetadata) -> List[Question]:
-        if not DB_ENABLED:
-            raise RuntimeError("Database-backed tests are disabled via configuration.")
-
         query = """
             SELECT
                 q.test_question_number,
@@ -417,9 +410,6 @@ def _persist_submission(
     answers: Dict[int, str],
     report,
 ) -> None:
-    if not DB_ENABLED:
-        return
-
     payload_answers = json.dumps(answers)
     payload_report = json.dumps(report)
     payload_categories = json.dumps(report.get("category_breakdown", []))
@@ -490,9 +480,6 @@ def _persist_student_and_responses(
     questions: List[Question],
     answers: Dict[int, str],
 ) -> None:
-    if not DB_ENABLED:
-        return
-
     first = (first_name or "").strip()
     last = (last_name or "").strip()
     if not first or not last:
@@ -553,7 +540,7 @@ def _login_required(view_func):
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
         if not _is_authenticated():
-            return redirect(url_for("login"))
+            return redirect(url_for("signup"))
         return view_func(*args, **kwargs)
 
     return wrapped_view
@@ -781,4 +768,5 @@ def inject_globals():
         "current_user": session.get("user"),
         "is_authenticated": _is_authenticated(),
         "auth0_login_url": _build_auth0_authorize_url(),
+        "auth0_signup_url": _build_auth0_authorize_url(screen_hint="signup"),
     }

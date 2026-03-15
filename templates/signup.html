@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block title %}Select Test · SAT Math Score Tool{% endblock %}
+{% block content %}
+  <style>
+    .begin-scoring-panel {
+      width: min(980px, 92vw);
+      margin: clamp(110px, 13vh, 170px) auto 2rem;
+      background: #fff;
+      border: 1px solid #e2ddd3;
+      border-radius: 1.25rem;
+      box-shadow: 0 18px 45px rgba(17, 17, 17, 0.08);
+      padding: clamp(1.5rem, 4vw, 2.75rem);
+      margin-bottom: 2rem;
+    }
+
+    .begin-scoring-panel h2 {
+      margin-top: 0;
+    }
+
+    .begin-scoring-panel .lead {
+      margin: 0 0 1.2rem;
+    }
+
+    .signup-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .signup-section-copy {
+      margin: 0;
+      color: #4f4f4f;
+    }
+
+    .signup-subcard {
+      border: 1px solid #2a2a2a;
+      border-radius: 0.95rem;
+      padding: clamp(1.5rem, 3vw, 2.5rem);
+      background: #fff;
+    }
+
+    .signup-subcard h3 {
+      margin: 0 0 0.9rem;
+      font-size: 2rem;
+      line-height: 1.1;
+      color: #151515;
+    }
+
+    .scoring-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.25rem;
+      align-items: end;
+    }
+
+    .scoring-form-grid .field {
+      margin-bottom: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .scoring-form-grid .field label {
+      display: block;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+      color: #151515;
+    }
+
+    .scoring-form-grid input,
+    .scoring-form-grid select {
+      width: 100%;
+      max-width: 100%;
+      display: block;
+      position: static;
+      padding: 0.85rem 0.95rem;
+      border-radius: 0.85rem;
+      border: 1px solid #e2ddd3;
+      box-sizing: border-box;
+      background: #fbfaf7;
+      color: inherit;
+      font-size: 1rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .scoring-form-grid input:focus,
+    .scoring-form-grid select:focus {
+      outline: none;
+      border-color: #c6a764;
+      box-shadow: 0 0 0 3px rgba(198, 167, 100, 0.25);
+    }
+
+    .scoring-form-grid .field--first-name {
+      grid-column: 1 / 2;
+    }
+
+    .scoring-form-grid .field--last-name {
+      grid-column: 2 / 3;
+    }
+
+    .scoring-form-grid .action-field {
+      grid-column: 1 / 2;
+      margin-top: 0;
+      padding-top: 0.9rem;
+      display: flex;
+      align-items: end;
+      justify-content: flex-start;
+    }
+
+    .login-subcard-actions {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .signup-subcard .start-answers-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 214px;
+      height: 60px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .signup-subcard .start-answers-btn.is-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    @media (max-width: 960px) {
+      .scoring-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .scoring-form-grid .field--first-name,
+      .scoring-form-grid .field--last-name,
+      .scoring-form-grid .action-field {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .begin-scoring-panel {
+        width: 100%;
+        margin-top: 110px;
+      }
+
+      .scoring-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .scoring-form-grid .action-field {
+        grid-column: auto;
+        margin-top: 0;
+      }
+
+      .signup-subcard .start-answers-btn {
+        width: 100%;
+        height: 60px;
+      }
+    }
+  </style>
+
+  <section class="card begin-scoring-panel">
+    <div class="signup-shell">
+      <p class="signup-section-copy">Sign Up to use services</p>
+
+      <div class="signup-subcard">
+        <h3>Sign Up</h3>
+        <div class="scoring-form-grid">
+          <div class="field field--first-name">
+            <label for="first_name">First Name</label>
+            <input type="text" name="first_name" id="first_name" placeholder="Input Field" value="{{ first_name }}" />
+          </div>
+          <div class="field field--last-name">
+            <label for="last_name">Last Name</label>
+            <input type="text" name="last_name" id="last_name" placeholder="Input Field" value="{{ last_name }}" />
+          </div>
+          <div class="action-field">
+            <a
+              href="{{ url_for('auth_signup') }}"
+              id="signup-action"
+              class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary is-disabled"
+              aria-disabled="true"
+            >
+              Sign Up
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <p class="signup-section-copy">Already a Member? Log In to your account</p>
+
+      <div class="signup-subcard">
+        <h3>Log In</h3>
+        <div class="login-subcard-actions">
+          <a href="{{ auth0_login_url }}" class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Log In</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const signupFirstName = document.getElementById("first_name");
+    const signupLastName = document.getElementById("last_name");
+    const signupAction = document.getElementById("signup-action");
+
+    if (signupFirstName && signupLastName && signupAction) {
+      const syncSignupActionState = () => {
+        const enabled = signupFirstName.value.trim() && signupLastName.value.trim();
+        signupAction.classList.toggle("is-disabled", !enabled);
+        signupAction.setAttribute("aria-disabled", enabled ? "false" : "true");
+      };
+
+      signupFirstName.addEventListener("input", syncSignupActionState);
+      signupLastName.addEventListener("input", syncSignupActionState);
+      syncSignupActionState();
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block title %}Score Report · SAT Math Score Tool{% endblock %}
+{% block content %}
+  <style>
+    .results-card {
+      width: min(980px, 92vw);
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      box-shadow: 0 18px 45px rgba(17, 17, 17, 0.08);
+      padding: clamp(1.5rem, 4vw, 2.75rem);
+      margin-bottom: 2rem;
+    }
+
+    .results-card--report {
+      margin-top: clamp(110px, 13vh, 170px);
+    }
+
+    @media (max-width: 640px) {
+      .results-card {
+        width: 100%;
+      }
+    }
+
+    .results-card .table-wrapper {
+      width: min(741px, 100%);
+      margin: 0 auto 1.5rem;
+      background: #fbfaf7;
+      border: 1px solid #e2ddd3;
+      border-radius: 12px;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    .results-card .table-wrapper.question-review-snapshot {
+      overflow-x: auto;
+    }
+
+    .results-card .table-wrapper.question-review-snapshot .question-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 480px;
+      background: #fff;
+      border-radius: 0.85rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      table-layout: auto;
+      margin: 0;
+    }
+
+    .results-card .table-wrapper.question-review-snapshot .question-table thead {
+      background: #f5f1e9;
+    }
+
+    .results-card .table-wrapper.question-review-snapshot .question-table th,
+    .results-card .table-wrapper.question-review-snapshot .question-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .results-card .table-wrapper.question-review-snapshot .question-table tr.correct td {
+      background-color: rgba(34, 197, 94, 0.09);
+    }
+
+    .results-card .table-wrapper.question-review-snapshot .question-table tr.incorrect td {
+      background-color: rgba(248, 113, 113, 0.12);
+    }
+
+    .results-card .table-wrapper.question-review-snapshot .question-number-link {
+      color: inherit;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .results-card .table-wrapper.question-review-snapshot .question-number-link:hover,
+    .results-card .table-wrapper.question-review-snapshot .question-number-link:focus {
+      text-decoration: underline;
+    }
+
+    .results-card .table-wrapper.question-breakdown-snapshot {
+      overflow-x: auto;
+    }
+
+    .results-card .table-wrapper.question-breakdown-snapshot .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 480px;
+      background: #fff;
+      border-radius: 0.85rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      table-layout: auto;
+      margin: 0;
+    }
+
+    .results-card .table-wrapper.question-breakdown-snapshot .breakdown-table thead {
+      background: #f5f1e9;
+    }
+
+    .results-card .table-wrapper.question-breakdown-snapshot .breakdown-table th,
+    .results-card .table-wrapper.question-breakdown-snapshot .breakdown-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .results-card .question-table,
+    .results-card .breakdown-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 92%;
+      table-layout: fixed;
+      margin: 0 auto;
+      border: 0;
+      background: transparent;
+      min-width: 480px;
+    }
+
+    .results-card .question-table thead,
+    .results-card .breakdown-table thead {
+      background: transparent;
+    }
+
+    .results-card .question-table thead tr,
+    .results-card .breakdown-table thead tr {
+      background: #e7e1d6;
+    }
+
+    .results-card .question-table th,
+    .results-card .question-table td,
+    .results-card .breakdown-table th,
+    .results-card .breakdown-table td {
+      padding: 8px 11px;
+      text-align: center;
+      vertical-align: middle;
+      border-bottom: 0;
+    }
+
+    .results-card .question-table thead th:first-child,
+    .results-card .breakdown-table thead th:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    .results-card .question-table thead th:last-child,
+    .results-card .breakdown-table thead th:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    .results-card .question-table tbody tr + tr th,
+    .results-card .question-table tbody tr + tr td,
+    .results-card .breakdown-table tbody tr + tr th,
+    .results-card .breakdown-table tbody tr + tr td {
+      border-top: 1px solid #dddddd;
+    }
+
+    .results-card .question-table th:first-child,
+    .results-card .question-table td:first-child {
+      width: 10%;
+      text-align: left;
+      padding-left: 0.5rem;
+      padding-right: 3px;
+    }
+
+    .results-card .question-table th:nth-child(2),
+    .results-card .question-table td:nth-child(2) {
+      padding-left: 6px;
+    }
+
+    .results-card .breakdown-table th:first-child,
+    .results-card .breakdown-table td:first-child {
+      text-align: left;
+      padding-left: 0.5rem;
+    }
+
+    .results-card h2,
+    .results-card h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  </style>
+
+  <section class="card results-card results-card--report">
+    <h2><strong>Score report for {{ student_name }}</strong></h2>
+    <p class="test-meta"><strong>Test:</strong> {{ test_name }}</p>
+    <div class="score-summary">
+      <p><strong>Total correct:</strong> {{ report.correct_count }} / {{ report.total_questions }}</p>
+      <p><strong>Accuracy:</strong> {{ '%.1f'|format(report.accuracy_pct) }}%</p>
+    </div>
+    <div class="form-actions">
+      <div class="sqs-block" data-definition-name="website.components.button">
+        <div class="sqs-block-content">
+          <div class="sqs-block-button-container sqs-block-button-container--left">
+            <div class="sqs-stretched">
+              <a href="{{ url_for('dashboard', test_id=test_id, first_name=first_name, last_name=last_name) }}" class="btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Score Another Test</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card results-card">
+    <h3><strong>Question review</strong></h3>
+    <div class="table-wrapper question-review-snapshot">
+      <table class="question-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Your answer</th>
+            <th>Correct answer</th>
+            <th>Question-Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in report.per_question %}
+            <tr class="{{ 'correct' if row.is_correct else 'incorrect' }}">
+              <td>
+                {% if question_link_prefix %}
+                  <a
+                    href="{{ question_link_prefix }}{{ row.number }}"
+                    class="question-number-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ row.number }}
+                  </a>
+                {% else %}
+                  {{ row.number }}
+                {% endif %}
+              </td>
+              <td>{{ row.student_answer }}</td>
+              <td>{{ row.correct_answer }}</td>
+              <td>{{ row.category }}</td>
+              <td>
+                {% if row.is_correct %}
+                  ✅ Correct
+                {% elif not row.raw_student_answer %}
+                  ◻️ Omitted
+                {% else %}
+                  ❌ Incorrect
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card results-card">
+    <h3><strong>Question-Type breakdown</strong></h3>
+    <div class="table-wrapper question-breakdown-snapshot">
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>Question-Type</th>
+            <th>Correct</th>
+            <th>Total</th>
+            <th>Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for category in report.category_breakdown %}
+            <tr>
+              <td>{{ category.category }}</td>
+              <td>{{ category.correct }}</td>
+              <td>{{ category.total }}</td>
+              <td>{{ '%.1f'|format(category.accuracy_pct) }}%</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+{% endblock %}

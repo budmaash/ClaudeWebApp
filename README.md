@@ -55,12 +55,11 @@ Set connection details via environment variables (or a `.env` file):
 
 | Variable | Default | Description |
 |---|---|---|
-| `SAT_DB_HOST` | `localhost` | Postgres host |
-| `SAT_DB_PORT` | `5432` | Postgres port |
-| `SAT_DB_NAME` | `SAT_Database` | Database name |
-| `SAT_DB_USER` | `postgres` | Database user |
-| `SAT_DB_PASSWORD` | *(none)* | Database password |
-| `SAT_DB_ENABLED` | `1` | Set to `0` to disable DB entirely |
+| `DB_HOST` | `localhost` | Postgres host |
+| `DB_PORT` | `5432` | Postgres port |
+| `DB_NAME` | `WebApp` | Database name |
+| `DB_USER` | `postgres` | Database user |
+| `DB_PASSWORD` | *(none)* | Database password |
 
 ### Expected schema
 

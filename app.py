@@ -16,6 +16,7 @@ import psycopg2
 from psycopg2 import sql
 from authlib.integrations.flask_client import OAuth
 from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
+from flask_session import Session
 from dotenv import load_dotenv
 
 
@@ -56,6 +57,8 @@ app.config["SECRET_KEY"] = os.environ.get(
 )
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN", "").strip()
 AUTH0_CLIENT_ID = os.environ.get("AUTH0_CLIENT_ID", "").strip()
@@ -555,6 +558,28 @@ def _auth0_client():
     return client
 
 
+# Keyed by state value → Authlib state_data dict.
+# Needed because Chrome's schemeful SameSite policy blocks cookies when
+# Auth0 (HTTPS) redirects back to localhost (HTTP), so the session cookie
+# is never sent on the callback request.
+_oauth_state_store: Dict[str, dict] = {}
+
+
+def _backup_oauth_states() -> None:
+    """Copy any _state_auth0_* keys from the session to the in-memory store."""
+    prefix = "_state_auth0_"
+    for key, value in list(session.items()):
+        if key.startswith(prefix):
+            _oauth_state_store[key[len(prefix):]] = value
+
+
+def _restore_oauth_state(state: str) -> None:
+    """If the session lacks a state key, restore it from the in-memory store."""
+    key = f"_state_auth0_{state}"
+    if key not in session and state in _oauth_state_store:
+        session[key] = _oauth_state_store.pop(state)
+
+
 def _build_auth0_authorize_url(*, screen_hint: Optional[str] = None) -> str:
     query = {
         "client_id": AUTH0_CLIENT_ID,
@@ -567,36 +592,43 @@ def _build_auth0_authorize_url(*, screen_hint: Optional[str] = None) -> str:
     return f"https://{AUTH0_DOMAIN}/authorize?{urlencode(query)}"
 
 
+def _get_student_name() -> Tuple[str, str]:
+    """Return (first_name, last_name) for the logged-in user from the DB."""
+    user = session.get("user", {})
+    user_id = user.get("user_id")
+    if not user_id:
+        return "", ""
+    try:
+        with psycopg2.connect(**DB_CONFIG) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT first_name, last_name FROM students WHERE user_id = %s LIMIT 1",
+                    (user_id,),
+                )
+                row = cursor.fetchone()
+                if row:
+                    return row[0], row[1]
+    except psycopg2.Error:
+        pass
+    return "", ""
+
+
 def _render_test_selection_page(template_name: str):
     tests = question_bank.available_tests()
     selected_test_id = tests[0].identifier if tests else None
-    first_name = ""
-    last_name = ""
 
     if request.method == "POST":
         if not tests:
             abort(400, description="No test files are available to score.")
 
         test_id = request.form.get("test_id", "").strip() or selected_test_id
-        first_name = request.form.get("first_name", "").strip()
-        last_name = request.form.get("last_name", "").strip()
-
-        if not first_name or not last_name:
-            flash("First and last name are required.")
-            return render_template(
-                template_name,
-                tests=tests,
-                selected_test_id=selected_test_id,
-                first_name=first_name,
-                last_name=last_name,
-            )
         try:
             question_bank.get_test(test_id)
             selected_test_id = test_id
         except ValueError:
-            # Fall back to the default test if an invalid identifier is submitted.
             selected_test_id = tests[0].identifier
 
+        first_name, last_name = _get_student_name()
         return redirect(
             url_for(
                 "entry",
@@ -608,8 +640,6 @@ def _render_test_selection_page(template_name: str):
 
     if request.method == "GET" and tests:
         requested_test = request.args.get("test_id", "").strip()
-        first_name = request.args.get("first_name", "").strip()
-        last_name = request.args.get("last_name", "").strip()
         if requested_test:
             try:
                 question_bank.get_test(requested_test)
@@ -621,8 +651,6 @@ def _render_test_selection_page(template_name: str):
         template_name,
         tests=tests,
         selected_test_id=selected_test_id,
-        first_name=first_name,
-        last_name=last_name,
     )
 
 
@@ -664,21 +692,27 @@ def logout():
 
 @app.get("/auth/login")
 def auth_login():
-    return _auth0_client().authorize_redirect(
+    resp = _auth0_client().authorize_redirect(
         redirect_uri=AUTH0_REDIRECT_URI or url_for("auth_callback", _external=True),
     )
+    _backup_oauth_states()
+    return resp
 
 
 @app.get("/auth/signup")
 def auth_signup():
-    return _auth0_client().authorize_redirect(
+    resp = _auth0_client().authorize_redirect(
         redirect_uri=AUTH0_REDIRECT_URI or url_for("auth_callback", _external=True),
         screen_hint="signup",
     )
+    _backup_oauth_states()
+    return resp
 
 
 @app.get("/auth/callback")
 def auth_callback():
+    state = request.args.get("state", "")
+    _restore_oauth_state(state)
     token = _auth0_client().authorize_access_token()
     userinfo = token.get("userinfo")
     if not userinfo:

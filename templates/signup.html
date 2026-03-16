@@ -81,7 +81,7 @@
       <div class="signup-subcard">
         <h3>Sign Up</h3>
         <div class="login-subcard-actions">
-          <a href="{{ auth0_signup_url }}" class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Sign Up</a>
+          <a href="{{ url_for('auth_signup') }}" class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Sign Up</a>
         </div>
       </div>
 
@@ -90,7 +90,7 @@
       <div class="signup-subcard">
         <h3>Log In</h3>
         <div class="login-subcard-actions">
-          <a href="{{ auth0_login_url }}" class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Log In</a>
+          <a href="{{ url_for('auth_login') }}" class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Log In</a>
         </div>
       </div>
     </div>

@@ -660,6 +660,13 @@ def logout():
     return redirect(f"https://{AUTH0_DOMAIN}/v2/logout?{query}")
 
 
+@app.get("/auth/login")
+def auth_login():
+    return _auth0_client().authorize_redirect(
+        redirect_uri=AUTH0_REDIRECT_URI or url_for("auth_callback", _external=True),
+    )
+
+
 @app.get("/auth/signup")
 def auth_signup():
     return _auth0_client().authorize_redirect(

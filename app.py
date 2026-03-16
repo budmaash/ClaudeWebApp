@@ -54,6 +54,8 @@ app.config["SECRET_KEY"] = os.environ.get(
     "FLASK_SECRET_KEY",
     os.environ.get("AUTH0_SECRET", "dev-secret-change-me"),
 )
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = False
 
 AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN", "").strip()
 AUTH0_CLIENT_ID = os.environ.get("AUTH0_CLIENT_ID", "").strip()

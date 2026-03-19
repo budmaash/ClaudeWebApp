@@ -500,7 +500,7 @@
         data-question-review-hotspot
         aria-label="Dismiss question review tip"
       >
-        Click a Question Number to see this quesiton explained
+        Click a Question Number to see this question explained
       </button>
       <button
         type="button"
@@ -645,10 +645,12 @@
       };
 
       const showTooltip = (segment) => {
-        tooltip.innerHTML = `
-          <span class="score-chart-tooltip-title">${segment.category}</span>
-          <span>${segment.missed} question${segment.missed === 1 ? "" : "s"} missed</span>
-        `;
+        const titleEl = document.createElement("span");
+        titleEl.className = "score-chart-tooltip-title";
+        titleEl.textContent = segment.category;
+        const countEl = document.createElement("span");
+        countEl.textContent = `${segment.missed} question${segment.missed === 1 ? "" : "s"} missed`;
+        tooltip.replaceChildren(titleEl, countEl);
         tooltip.classList.add("is-visible");
       };
 

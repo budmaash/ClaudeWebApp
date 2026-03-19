@@ -2,6 +2,157 @@
 {% block title %}Score Report · SAT Math Score Tool{% endblock %}
 {% block content %}
   <style>
+    .score-report-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .score-report-copy {
+      max-width: 320px;
+    }
+
+    .score-report-visual {
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) minmax(170px, 220px);
+      gap: 1.5rem;
+      align-items: center;
+      justify-content: end;
+    }
+
+    .score-legend {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .score-legend-item {
+      display: grid;
+      grid-template-columns: 14px 1fr;
+      gap: 0.65rem;
+      align-items: start;
+    }
+
+    .score-legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      margin-top: 0.22rem;
+      box-shadow: 0 0 0 1px rgba(17, 17, 17, 0.08);
+    }
+
+    .score-legend-label {
+      display: block;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .score-chart-wrap {
+      display: grid;
+      justify-items: center;
+      gap: 0.9rem;
+    }
+
+    .score-chart-title {
+      margin: 0;
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .score-chart {
+      width: clamp(220px, 24vw, 280px);
+      aspect-ratio: 1;
+      display: block;
+      overflow: visible;
+    }
+
+    .score-chart-shell {
+      position: relative;
+      width: clamp(220px, 24vw, 280px);
+      aspect-ratio: 1;
+    }
+
+    .score-chart-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 10px 18px rgba(17, 17, 17, 0.08));
+    }
+
+    .score-chart-empty {
+      fill: #f0ece4;
+      stroke: rgba(17, 17, 17, 0.75);
+      stroke-width: 2;
+    }
+
+    .score-chart-sector {
+      cursor: pointer;
+      stroke: rgba(255, 255, 255, 0.96);
+      stroke-width: 2.25;
+      transition: transform 0.16s ease, filter 0.16s ease;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .score-chart-sector:hover,
+    .score-chart-sector:focus-visible,
+    .score-chart-sector.is-active {
+      transform: scale(1.03);
+      filter: brightness(1.03);
+      outline: none;
+    }
+
+    .score-chart-tooltip {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 10px);
+      transform: translateX(-50%);
+      min-width: 170px;
+      padding: 0.65rem 0.85rem;
+      border-radius: 0.8rem;
+      background: rgba(17, 17, 17, 0.93);
+      color: #fff;
+      text-align: center;
+      line-height: 1.35;
+      font-size: 0.92rem;
+      box-shadow: 0 14px 30px rgba(17, 17, 17, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s ease;
+    }
+
+    .score-chart-tooltip.is-visible {
+      opacity: 1;
+    }
+
+    .score-chart-tooltip::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      width: 12px;
+      height: 12px;
+      background: rgba(17, 17, 17, 0.93);
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    .score-chart-tooltip-title {
+      display: block;
+      font-weight: 700;
+    }
+
+    .score-chart-note {
+      margin: 0;
+      text-align: center;
+      color: #5f5a52;
+      font-size: 0.95rem;
+      max-width: 24ch;
+    }
+
     .results-card {
       width: min(980px, 92vw);
       margin: 0 auto;
@@ -20,6 +171,26 @@
     @media (max-width: 640px) {
       .results-card {
         width: 100%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .score-report-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .score-report-visual {
+        grid-template-columns: 1fr;
+        justify-content: start;
+      }
+
+      .score-chart-wrap {
+        justify-items: start;
+      }
+
+      .score-chart-title,
+      .score-chart-note {
+        text-align: left;
       }
     }
 
@@ -69,15 +240,86 @@
       background-color: rgba(248, 113, 113, 0.12);
     }
 
-    .results-card .table-wrapper.question-review-snapshot .question-number-link {
-      color: inherit;
+    .results-card .table-wrapper.question-review-snapshot .question-number-link,
+    .results-card .table-wrapper.question-breakdown-snapshot .question-number-link {
+      color: blue;
       font-weight: 600;
       text-decoration: none;
     }
 
+    .results-card .table-wrapper.question-review-snapshot .question-number-link:visited,
+    .results-card .table-wrapper.question-breakdown-snapshot .question-number-link:visited {
+      color: purple;
+    }
+
     .results-card .table-wrapper.question-review-snapshot .question-number-link:hover,
-    .results-card .table-wrapper.question-review-snapshot .question-number-link:focus {
+    .results-card .table-wrapper.question-review-snapshot .question-number-link:focus,
+    .results-card .table-wrapper.question-review-snapshot .question-number-link:active,
+    .results-card .table-wrapper.question-breakdown-snapshot .question-number-link:hover,
+    .results-card .table-wrapper.question-breakdown-snapshot .question-number-link:focus,
+    .results-card .table-wrapper.question-breakdown-snapshot .question-number-link:active {
+      color: red;
       text-decoration: underline;
+    }
+
+    .question-review-hotspot-wrap {
+      position: relative;
+      padding-top: 3.5rem;
+    }
+
+    .question-review-hotspot {
+      position: absolute;
+      top: 0;
+      width: min(270px, 58vw);
+      padding: 0.8rem 0.95rem;
+      border: 1px solid #9dcff7;
+      border-radius: 0.95rem;
+      background: #dff2ff;
+      color: #17324a;
+      font-size: 0.92rem;
+      line-height: 1.35;
+      text-align: left;
+      box-shadow: 0 14px 28px rgba(49, 118, 173, 0.18);
+      cursor: pointer;
+      z-index: 4;
+      animation: hotspot-pulse 1.8s ease-in-out infinite;
+    }
+
+    .question-review-hotspot--number {
+      left: 5.5%;
+    }
+
+    .question-review-hotspot--type {
+      left: 54%;
+    }
+
+    .question-review-hotspot::after {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 100%;
+      width: 12px;
+      height: 12px;
+      background: #dff2ff;
+      border-right: 1px solid #9dcff7;
+      border-bottom: 1px solid #9dcff7;
+      transform: translateY(-6px) rotate(45deg);
+    }
+
+    .question-review-hotspot.is-hidden {
+      display: none;
+    }
+
+    @keyframes hotspot-pulse {
+      0%, 100% {
+        transform: translateY(0);
+        box-shadow: 0 14px 28px rgba(49, 118, 173, 0.18);
+      }
+
+      50% {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(49, 118, 173, 0.28);
+      }
     }
 
     .results-card .table-wrapper.question-breakdown-snapshot {
@@ -185,21 +427,65 @@
     }
   </style>
 
+  {% set chart_palette = ['#D1495B', '#EDA247', '#EBCB5D', '#5B8E7D', '#4D7EA8', '#7B5EA7', '#C06C84', '#6C8EAD'] %}
+  {% set missed_breakdown = report.missed_question_breakdown %}
+
   <section class="card results-card results-card--report">
-    <h2><strong>Score report for {{ student_name }}</strong></h2>
-    <p class="test-meta"><strong>Test:</strong> {{ test_name }}</p>
-    <div class="score-summary">
-      <p><strong>Total correct:</strong> {{ report.correct_count }} / {{ report.total_questions }}</p>
-      <p><strong>Accuracy:</strong> {{ '%.1f'|format(report.accuracy_pct) }}%</p>
-    </div>
-    <div class="form-actions">
-      <div class="sqs-block" data-definition-name="website.components.button">
-        <div class="sqs-block-content">
-          <div class="sqs-block-button-container sqs-block-button-container--left">
-            <div class="sqs-stretched">
-              <a href="{{ url_for('dashboard', test_id=test_id, first_name=first_name, last_name=last_name) }}" class="btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Score Another Test</a>
+    <div class="score-report-layout">
+      <div class="score-report-copy">
+        <h2><strong>Score report for {{ student_name }}</strong></h2>
+        <p class="test-meta"><strong>Test:</strong> {{ test_name }}</p>
+        <div class="score-summary">
+          <p><strong>Total correct:</strong> {{ report.correct_count }} / {{ report.total_questions }}</p>
+          <p><strong>Accuracy:</strong> {{ '%.1f'|format(report.accuracy_pct) }}%</p>
+        </div>
+        <div class="form-actions">
+          <div class="sqs-block" data-definition-name="website.components.button">
+            <div class="sqs-block-content">
+              <div class="sqs-block-button-container sqs-block-button-container--left">
+                <div class="sqs-stretched">
+                  <a href="{{ url_for('dashboard', test_id=test_id, first_name=first_name, last_name=last_name) }}" class="btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Score Another Test</a>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="score-report-visual">
+        <div class="score-chart-wrap">
+          <p class="score-chart-title">Questions Missed By Type</p>
+          <div class="score-chart-shell">
+            <div class="score-chart-tooltip" data-score-chart-tooltip aria-live="polite"></div>
+            <svg
+              class="score-chart score-chart-svg"
+              viewBox="0 0 220 220"
+              data-score-chart
+              data-chart='{{ missed_breakdown|tojson }}'
+              data-palette='{{ chart_palette|tojson }}'
+              aria-label="Pie chart showing missed questions by question type"
+              role="img"
+            ></svg>
+          </div>
+          <p class="score-chart-note">
+            Questions missed: {{ report.missed_count }}
+          </p>
+        </div>
+        <div>
+          {% if missed_breakdown %}
+            <ul class="score-legend">
+              {% for item in missed_breakdown %}
+                {% set color = chart_palette[loop.index0 % chart_palette|length] %}
+                <li class="score-legend-item">
+                  <span class="score-legend-swatch" style="background: {{ color }};"></span>
+                  <span>
+                    <span class="score-legend-label">{{ item.category }}</span>
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="score-chart-note">No missed question types. Every question was answered correctly.</p>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -207,50 +493,81 @@
 
   <section class="card results-card">
     <h3><strong>Question review</strong></h3>
-    <div class="table-wrapper question-review-snapshot">
-      <table class="question-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Your answer</th>
-            <th>Correct answer</th>
-            <th>Question-Type</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in report.per_question %}
-            <tr class="{{ 'correct' if row.is_correct else 'incorrect' }}">
-              <td>
-                {% if question_link_prefix %}
-                  <a
-                    href="{{ question_link_prefix }}{{ row.number }}"
-                    class="question-number-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {{ row.number }}
-                  </a>
-                {% else %}
-                  {{ row.number }}
-                {% endif %}
-              </td>
-              <td>{{ row.student_answer }}</td>
-              <td>{{ row.correct_answer }}</td>
-              <td>{{ row.category }}</td>
-              <td>
-                {% if row.is_correct %}
-                  ✅ Correct
-                {% elif not row.raw_student_answer %}
-                  ◻️ Omitted
-                {% else %}
-                  ❌ Incorrect
-                {% endif %}
-              </td>
+    <div class="question-review-hotspot-wrap">
+      <button
+        type="button"
+        class="question-review-hotspot question-review-hotspot--number"
+        data-question-review-hotspot
+        aria-label="Dismiss question review tip"
+      >
+        Click a Question Number to see this quesiton explained
+      </button>
+      <button
+        type="button"
+        class="question-review-hotspot question-review-hotspot--type"
+        data-question-review-hotspot
+        aria-label="Dismiss question type tip"
+      >
+        Click a Question-Type to see this Question-Type explained.
+      </button>
+      <div class="table-wrapper question-review-snapshot">
+        <table class="question-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Your answer</th>
+              <th>Correct answer</th>
+              <th>Question-Type</th>
+              <th>Status</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for row in report.per_question %}
+              <tr class="{{ 'correct' if row.is_correct else 'incorrect' }}">
+                <td>
+                  {% if question_link_prefix %}
+                    <a
+                      href="{{ question_link_prefix }}{{ row.number }}"
+                      class="question-number-link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ row.number }}
+                    </a>
+                  {% else %}
+                    {{ row.number }}
+                  {% endif %}
+                </td>
+                <td>{{ row.student_answer }}</td>
+                <td>{{ row.correct_answer }}</td>
+                <td>
+                  {% if row.category_video_url %}
+                    <a
+                      href="{{ row.category_video_url }}"
+                      class="question-number-link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ row.category }}
+                    </a>
+                  {% else %}
+                    {{ row.category }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if row.is_correct %}
+                    ✅ Correct
+                  {% elif not row.raw_student_answer %}
+                    ◻️ Omitted
+                  {% else %}
+                    ❌ Incorrect
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -269,7 +586,20 @@
         <tbody>
           {% for category in report.category_breakdown %}
             <tr>
-              <td>{{ category.category }}</td>
+              <td>
+                {% if category.category_video_url %}
+                  <a
+                    href="{{ category.category_video_url }}"
+                    class="question-number-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ category.category }}
+                  </a>
+                {% else %}
+                  {{ category.category }}
+                {% endif %}
+              </td>
               <td>{{ category.correct }}</td>
               <td>{{ category.total }}</td>
               <td>{{ '%.1f'|format(category.accuracy_pct) }}%</td>
@@ -279,5 +609,128 @@
       </table>
     </div>
   </section>
+
+  <script>
+    (() => {
+      const svg = document.querySelector("[data-score-chart]");
+      const tooltip = document.querySelector("[data-score-chart-tooltip]");
+      if (!svg || !tooltip) {
+        return;
+      }
+
+      const segments = JSON.parse(svg.dataset.chart || "[]");
+      const palette = JSON.parse(svg.dataset.palette || "[]");
+      const cx = 110;
+      const cy = 110;
+      const radius = 92;
+
+      const polarToCartesian = (centerX, centerY, r, angleDeg) => {
+        const angleRad = (angleDeg - 90) * Math.PI / 180;
+        return {
+          x: centerX + r * Math.cos(angleRad),
+          y: centerY + r * Math.sin(angleRad),
+        };
+      };
+
+      const describeArc = (startAngle, endAngle) => {
+        const start = polarToCartesian(cx, cy, radius, endAngle);
+        const end = polarToCartesian(cx, cy, radius, startAngle);
+        const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+        return [
+          `M ${cx} ${cy}`,
+          `L ${start.x} ${start.y}`,
+          `A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`,
+          "Z",
+        ].join(" ");
+      };
+
+      const showTooltip = (segment) => {
+        tooltip.innerHTML = `
+          <span class="score-chart-tooltip-title">${segment.category}</span>
+          <span>${segment.missed} question${segment.missed === 1 ? "" : "s"} missed</span>
+        `;
+        tooltip.classList.add("is-visible");
+      };
+
+      const hideTooltip = () => {
+        tooltip.classList.remove("is-visible");
+      };
+
+      if (!segments.length) {
+        const emptyCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        emptyCircle.setAttribute("class", "score-chart-empty");
+        emptyCircle.setAttribute("cx", String(cx));
+        emptyCircle.setAttribute("cy", String(cy));
+        emptyCircle.setAttribute("r", String(radius));
+        svg.appendChild(emptyCircle);
+        return;
+      }
+
+      let currentAngle = 0;
+      segments.forEach((segment, index) => {
+        const color = palette[index % palette.length];
+        const sweep = (segment.share_pct / 100) * 360;
+        let sector;
+
+        if (segments.length === 1 || sweep >= 359.99) {
+          sector = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          sector.setAttribute("cx", String(cx));
+          sector.setAttribute("cy", String(cy));
+          sector.setAttribute("r", String(radius));
+        } else {
+          sector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          sector.setAttribute("d", describeArc(currentAngle, currentAngle + sweep));
+        }
+
+        sector.setAttribute("class", "score-chart-sector");
+        sector.setAttribute("fill", color);
+        sector.setAttribute("tabindex", "0");
+        sector.setAttribute(
+          "aria-label",
+          `${segment.category}: ${segment.missed} question${segment.missed === 1 ? "" : "s"} missed`
+        );
+
+        const activate = () => {
+          svg.querySelectorAll(".score-chart-sector").forEach((item) => {
+            item.classList.remove("is-active");
+          });
+          sector.classList.add("is-active");
+          showTooltip(segment);
+        };
+
+        const deactivate = () => {
+          sector.classList.remove("is-active");
+          hideTooltip();
+        };
+
+        sector.addEventListener("mouseenter", activate);
+        sector.addEventListener("focus", activate);
+        sector.addEventListener("mouseleave", deactivate);
+        sector.addEventListener("blur", deactivate);
+
+        const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+        title.textContent = `${segment.category}: ${segment.missed} question${segment.missed === 1 ? "" : "s"} missed`;
+        sector.appendChild(title);
+
+        svg.appendChild(sector);
+        currentAngle += sweep;
+      });
+    })();
+  </script>
+
+  <script>
+    (() => {
+      const hotspots = document.querySelectorAll("[data-question-review-hotspot]");
+      if (!hotspots.length) {
+        return;
+      }
+
+      hotspots.forEach((hotspot) => {
+        hotspot.addEventListener("click", () => {
+          hotspot.classList.add("is-hidden");
+        });
+      });
+    })();
+  </script>
 
 {% endblock %}

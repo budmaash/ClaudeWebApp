@@ -127,6 +127,30 @@ class QuestionBank:
 
     def __init__(self) -> None:
         self._questions_cache: Dict[str, List[Question]] = {}
+        self._question_type_video_lookup = self._load_question_type_video_lookup()
+
+    def _load_question_type_video_lookup(self) -> Dict[str, str]:
+        lookup: Dict[str, str] = {}
+        try:
+            with psycopg2.connect(**DB_CONFIG) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT question_types_id, video_link
+                        FROM "QType_Vids"
+                        WHERE video_link IS NOT NULL
+                        """
+                    )
+                    for question_type_id, video_link in cursor.fetchall():
+                        if question_type_id is None or not video_link:
+                            continue
+                        normalized_key = _normalize_category_key(str(question_type_id))
+                        cleaned_path = str(video_link).strip().lstrip("/")
+                        if cleaned_path:
+                            lookup[normalized_key] = f"https://www.hasantutoring.com/{cleaned_path}"
+        except psycopg2.Error as exc:
+            app.logger.warning("Failed to load question type video links: %s", exc)
+        return lookup
 
     def available_tests(self) -> List[TestDefinition]:
         return self._available_database_tests()
@@ -197,7 +221,8 @@ class QuestionBank:
                 q.test_question_number,
                 q.correct_answer,
                 qt.name AS category_name,
-                q.id AS question_id
+                q.id AS question_id,
+                q.question_type_id
             FROM questions q
             JOIN question_types qt ON q.question_type_id = qt.id
             WHERE q.test_id = %s AND q.section_id = %s AND q.module_id = %s
@@ -223,7 +248,7 @@ class QuestionBank:
         if not rows:
             raise ValueError("No questions were found for the selected database test.")
 
-        for test_question_number, correct_answer, category_name, question_id in rows:
+        for test_question_number, correct_answer, category_name, question_id, question_type_id in rows:
             if test_question_number is None:
                 raise ValueError("Each database question must include a test_question_number.")
 
@@ -245,6 +270,9 @@ class QuestionBank:
                     category=category_name,
                     expects_numeric_response=expects_numeric_response,
                     db_question_id=question_id,
+                    category_video_url=self._question_type_video_lookup.get(
+                        _normalize_category_key(str(question_type_id))
+                    ),
                 )
             )
 

@@ -40,6 +40,7 @@ class Question:
     category: str
     expects_numeric_response: bool
     db_question_id: Optional[int] = None
+    category_video_url: Optional[str] = None
 
     @property
     def display_correct_answer(self) -> str:

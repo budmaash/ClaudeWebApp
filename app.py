@@ -284,6 +284,8 @@ class QuestionBank:
 def build_score_report(student_answers: Dict[int, str], questions: List[Question]):
     per_question = []
     category_totals: Dict[str, Dict[str, int]] = defaultdict(lambda: {"total": 0, "correct": 0})
+    category_video_urls: Dict[str, str] = {}
+    missed_totals: Dict[str, int] = defaultdict(int)
     correct_count = 0
 
     for question in questions:
@@ -291,9 +293,13 @@ def build_score_report(student_answers: Dict[int, str], questions: List[Question
         is_correct = student_answer in question.correct_answers
 
         category_totals[question.category]["total"] += 1
+        if question.category_video_url and question.category not in category_video_urls:
+            category_video_urls[question.category] = question.category_video_url
         if is_correct:
             correct_count += 1
             category_totals[question.category]["correct"] += 1
+        else:
+            missed_totals[question.category] += 1
 
         per_question.append(
             {
@@ -303,11 +309,10 @@ def build_score_report(student_answers: Dict[int, str], questions: List[Question
                 "correct_answer": question.display_correct_answer,
                 "is_correct": is_correct,
                 "category": question.category,
+                "category_video_url": question.category_video_url,
             }
         )
 
-    # SAT math scores range from 200-800. We approximate the scale linearly based on
-    # the percentage of questions answered correctly.
     total_questions = len(questions)
     if total_questions:
         accuracy = correct_count / total_questions
@@ -327,8 +332,24 @@ def build_score_report(student_answers: Dict[int, str], questions: List[Question
                 "correct": correct,
                 "total": total,
                 "accuracy_pct": accuracy_pct,
+                "category_video_url": category_video_urls.get(category),
             }
         )
+
+    total_missed = total_questions - correct_count
+    missed_question_breakdown = []
+    if total_missed:
+        for category, missed_count in sorted(
+            missed_totals.items(),
+            key=lambda item: (-item[1], item[0].lower()),
+        ):
+            missed_question_breakdown.append(
+                {
+                    "category": category,
+                    "missed": missed_count,
+                    "share_pct": (missed_count / total_missed) * 100,
+                }
+            )
 
     return {
         "per_question": per_question,
@@ -337,6 +358,8 @@ def build_score_report(student_answers: Dict[int, str], questions: List[Question
         "accuracy_pct": accuracy * 100 if total_questions else 0,
         "scaled_score": scaled_score,
         "category_breakdown": category_breakdown,
+        "missed_question_breakdown": missed_question_breakdown,
+        "missed_count": total_missed,
     }
 
 

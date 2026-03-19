@@ -6,3 +6,4 @@ instance/
 .DS_Store
 results/
 flask_session/
+.worktrees/

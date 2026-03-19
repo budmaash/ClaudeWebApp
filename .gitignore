@@ -5,3 +5,4 @@ instance/
 .env
 .DS_Store
 results/
+flask_session/

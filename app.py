@@ -397,6 +397,16 @@ def _is_fraction_string(value: str) -> bool:
         return False
 
 
+def _normalize_category_key(value: str) -> str:
+    cleaned = value.strip()
+    if not cleaned:
+        return cleaned
+    try:
+        return str(int(cleaned))
+    except ValueError:
+        return cleaned
+
+
 question_bank = QuestionBank()
 
 

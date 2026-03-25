@@ -1,0 +1,34 @@
+<footer class="sections" id="footer-sections" data-footer-sections="">
+  <section data-test="page-section" data-section-theme="light" class="page-section layout-engine-section background-width--full-bleed section-height--custom content-width--wide horizontal-alignment--center vertical-alignment--middle light" data-section-id="671b38bf21eb483e9467eaea" data-controller="SectionWrapperController" data-animation="none" style="min-height: 10vh;" data-sqsp-section="classic-editor">
+    <div class="section-border"><div class="section-background"></div></div>
+    <div class="content-wrapper" style="padding-top: calc(10vmax / 10); padding-bottom: calc(10vmax / 10);">
+      <div class="content">
+        <div class="sqs-layout sqs-grid-12 columns-12 empty" data-type="page-section" id="page-section-671b38bf21eb483e9467eaea"></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-test="page-section" data-section-theme="dark" class="page-section layout-engine-section background-width--full-bleed section-height--small content-width--wide horizontal-alignment--center vertical-alignment--middle dark" data-section-id="671b38bf21eb483e9467eaec" data-controller="SectionWrapperController" data-animation="none" data-sqsp-section="classic-editor">
+    <div class="section-border"><div class="section-background"></div></div>
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="sqs-layout sqs-grid-12 columns-12" data-type="page-section" id="page-section-671b38bf21eb483e9467eaec">
+          <div class="row sqs-row">
+            {% for column in shell.footer.columns %}
+            <div class="col sqs-col-4 span-4">
+              <div class="sqs-block markdown-block sqs-block-markdown" data-block-type="44" id="footer-column-{{ loop.index }}">
+                <div class="sqs-block-content">
+                  <h2><strong>{{ column.heading }}</strong></h2>
+                  {% for snippet in column.html %}
+                  {{ snippet | safe }}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</footer>

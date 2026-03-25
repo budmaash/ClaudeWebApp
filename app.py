@@ -15,6 +15,7 @@ from urllib.parse import urlencode
 import psycopg2
 from psycopg2 import sql
 from authlib.integrations.flask_client import OAuth
+from flask_shell_config import create_shell_config
 from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
 from dotenv import load_dotenv
@@ -998,6 +999,10 @@ def inject_globals():
         "is_authenticated": _is_authenticated(),
         "auth0_login_url": _build_auth0_authorize_url(),
         "auth0_signup_url": _build_auth0_authorize_url(screen_hint="signup"),
+        "shell": create_shell_config({
+            "favicon": url_for("static", filename="favicon.png"),
+            "site_title": "SAT Math Score Tool",
+        }),
     }
 
 

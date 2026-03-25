@@ -1,0 +1,112 @@
+<header data-test="header" id="header" class="header theme-col--primary white" data-section-theme="white">
+  <div class="header-announcement-bar-wrapper">
+    <a href="#page" class="header-skip-link sqs-button-element--primary">Skip to Content</a>
+    <div class="header-inner container--fluid header-mobile-layout-logo-left-nav-right header-layout-nav-right" data-test="header-inner">
+      <div class="header-background theme-bg--primary"></div>
+      <div class="header-display-desktop" data-content-field="site-title">
+        <div class="header-title-nav-wrapper">
+          <div class="header-title" data-animation-role="header-element">
+            <div class="header-title-logo">
+              <a href="https://www.hasantutoring.com/" data-animation-role="header-element">
+                <img
+                  src="{{ url_for('static', filename='ss_homepage/HASAN+TUTORING-logo.png') }}"
+                  alt="Expert Tutoring for the ACT and SAT"
+                  style="display:block"
+                  loading="eager"
+                />
+              </a>
+            </div>
+          </div>
+          <div class="header-nav">
+            <div class="header-nav-wrapper">
+              <nav class="header-nav-list">
+                <div class="header-nav-item header-nav-item--collection header-nav-item--active header-nav-item--homepage">
+                  <a href="https://www.hasantutoring.com/" aria-current="page">Start Here</a>
+                </div>
+                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/tests">Test Info</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/act-vs-sat">ACT vs. SAT</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/test-prep-options">Why Tutoring?</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/about-me">About Me</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/faqs">FAQs</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/blog">Blog</a></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <div class="header-actions header-actions--right">
+          <div class="user-accounts-link header-nav-item header-nav-item--collection customerAccountLoginDesktop loaded">
+            <a class="user-accounts-text-link header-nav-item" href="{{ url_for('logout') if is_authenticated else auth0_login_url }}">
+              <span class="unauth">{{ 'Logout' if is_authenticated else 'Login' }}</span>
+            </a>
+          </div>
+          <div class="header-actions-action header-actions-action--cta">
+            <a class="btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary" href="{{ url_for('dashboard' if is_authenticated else 'signup') }}">
+              {{ 'Dashboard' if is_authenticated else 'Sign Up' }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-display-mobile" data-content-field="site-title">
+        <div class="header-title-nav-wrapper">
+          <div class="header-title">
+            <div class="header-title-logo">
+              <a href="https://www.hasantutoring.com/">
+                <img
+                  src="{{ url_for('static', filename='ss_homepage/HASAN+TUTORING-logo.png') }}"
+                  alt="Expert Tutoring for the ACT and SAT"
+                  style="display:block"
+                  loading="eager"
+                />
+              </a>
+            </div>
+          </div>
+          <div class="header-burger menu-overlay-has-visible-non-navigation-items">
+            <button class="header-burger-btn burger" data-test="header-burger" type="button" aria-label="Toggle Menu">
+              <span class="js-header-burger-open-title visually-hidden">Open Menu</span>
+              <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
+              <div class="burger-box">
+                <div class="burger-inner header-menu-icon-doubleLineHamburger">
+                  <div class="top-bun"></div>
+                  <div class="patty"></div>
+                  <div class="bottom-bun"></div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-menu header-menu--folder-list" id="mobileMenu" hidden>
+    <div class="header-menu-bg theme-bg--primary"></div>
+    <div class="header-menu-nav">
+      <nav class="header-menu-nav-list">
+        <div data-folder="root" class="header-menu-nav-folder header-menu-nav-folder--active">
+          <div class="header-menu-nav-folder-content">
+            <div class="header-menu-nav-wrapper">
+              <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active header-menu-nav-item--homepage"><a href="https://www.hasantutoring.com/"><div class="header-menu-nav-item-content">Start Here</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/tests"><div class="header-menu-nav-item-content">Test Info</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/act-vs-sat"><div class="header-menu-nav-item-content">ACT vs. SAT</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/test-prep-options"><div class="header-menu-nav-item-content">Why Tutoring?</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/about-me"><div class="header-menu-nav-item-content">About Me</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/faqs"><div class="header-menu-nav-item-content">FAQs</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/blog"><div class="header-menu-nav-item-content">Blog</div></a></div>
+            </div>
+            <div class="user-accounts-link header-menu-nav-item header-nav-item--collection customerAccountLoginMobile loaded">
+              <a class="user-accounts-text-link header-nav-item" href="{{ url_for('logout') if is_authenticated else auth0_login_url }}">
+                <span class="unauth">{{ 'Logout' if is_authenticated else 'Login' }}</span>
+              </a>
+            </div>
+          </div>
+          <div class="header-menu-cta">
+            <a class="theme-btn--primary btn sqs-button-element--tertiary" href="{{ url_for('dashboard' if is_authenticated else 'signup') }}">
+              {{ 'Dashboard' if is_authenticated else 'Sign Up' }}
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>

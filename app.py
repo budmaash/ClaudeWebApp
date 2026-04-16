@@ -728,13 +728,10 @@ def _render_auth_page(template_name: str):
 
 @app.get("/")
 def root():
-    if _is_authenticated():
-        return redirect(url_for("dashboard"))
-    return redirect(url_for("signup"))
+    return _render_test_selection_page("index.html")
 
 
 @app.route("/dashboard", methods=["GET", "POST"])
-@_login_required
 def dashboard():
     return _render_test_selection_page("index.html")
 
@@ -859,7 +856,6 @@ def auth_callback():
 
 
 @app.get("/entry")
-@_login_required
 def entry():
     test_id = request.args.get("test_id", "").strip()
     first_name = request.args.get("first_name", "").strip()
@@ -868,8 +864,6 @@ def entry():
 
     if not test_id:
         abort(400, description="A test must be selected before entering answers.")
-    if not first_name or not last_name:
-        abort(400, description="First and last name are required to score a student.")
 
     try:
         test = question_bank.get_test(test_id)
@@ -890,7 +884,6 @@ def entry():
 
 
 @app.post("/results")
-@_login_required
 def results():
     test_id = request.form.get("test_id", "").strip()
     if not test_id:
@@ -917,15 +910,15 @@ def results():
 
     report = build_score_report(answers, questions)
 
-    _persist_student_and_responses(
-        first_name=first_name,
-        last_name=last_name,
-        test=test,
-        questions=questions,
-        answers=answers,
-    )
-
-    _persist_submission(test=test, student_name=student_name, answers=answers, report=report)
+    if _is_authenticated():
+        _persist_student_and_responses(
+            first_name=first_name,
+            last_name=last_name,
+            test=test,
+            questions=questions,
+            answers=answers,
+        )
+        _persist_submission(test=test, student_name=student_name, answers=answers, report=report)
 
     return render_template(
         "results.html",

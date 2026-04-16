@@ -19,7 +19,7 @@ import resend
 from psycopg2 import sql
 from authlib.integrations.flask_client import OAuth
 from flask_shell_config import create_shell_config
-from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
+from flask import Flask, abort, flash, redirect, render_template, request, send_file, session, url_for
 from flask_session import Session
 from dotenv import load_dotenv
 
@@ -124,6 +124,10 @@ def _build_question_link_prefix(test: TestDefinition) -> Optional[str]:
     if not test_number or not module_number:
         return None
     return f"https://www.hasantutoring.com/math-test-{test_number}-module-{module_number}/v/question"
+
+
+def _build_question_image_url(question: Question) -> str:
+    return url_for("test_question_placeholder")
 
 
 class QuestionBank:
@@ -682,6 +686,10 @@ def _get_student_name() -> Tuple[str, str]:
 def _render_test_selection_page(template_name: str):
     tests = question_bank.available_tests()
     selected_test_id = tests[0].identifier if tests else None
+    first_name = request.args.get("first_name", "").strip()
+    last_name = request.args.get("last_name", "").strip()
+    if not first_name and not last_name:
+        first_name, last_name = _get_student_name()
 
     if request.method == "POST":
         if not tests:
@@ -694,7 +702,14 @@ def _render_test_selection_page(template_name: str):
         except ValueError:
             selected_test_id = tests[0].identifier
 
-        first_name, last_name = _get_student_name()
+        posted_first_name = request.form.get("first_name", "").strip()
+        posted_last_name = request.form.get("last_name", "").strip()
+        if posted_first_name or posted_last_name:
+            first_name = posted_first_name
+            last_name = posted_last_name
+        if not first_name or not last_name:
+            abort(400, description="First and last name are required before entering answers.")
+
         return redirect(
             url_for(
                 "entry",
@@ -717,6 +732,8 @@ def _render_test_selection_page(template_name: str):
         template_name,
         tests=tests,
         selected_test_id=selected_test_id,
+        first_name=first_name,
+        last_name=last_name,
     )
 
 
@@ -879,6 +896,50 @@ def entry():
         first_name=first_name,
         last_name=last_name,
         questions=questions,
+        multiple_choice_choices=MULTIPLE_CHOICE_CHOICES,
+    )
+
+
+@app.get("/test-question-placeholder.png")
+def test_question_placeholder():
+    return send_file(os.path.join(app.root_path, "1,1,1,1.png"), mimetype="image/png")
+
+
+@app.route("/test", methods=["GET", "POST"])
+def test():
+    test_id = request.values.get("test_id", "").strip()
+    first_name = request.values.get("first_name", "").strip()
+    last_name = request.values.get("last_name", "").strip()
+    student_name = _compose_student_name(first_name, last_name)
+
+    if not test_id:
+        abort(400, description="A test must be selected before starting the test.")
+
+    if not first_name or not last_name:
+        abort(400, description="First and last name are required before starting the test.")
+
+    try:
+        selected_test = question_bank.get_test(test_id)
+    except ValueError as exc:
+        abort(400, description=str(exc))
+
+    questions = question_bank.questions_for(test_id)
+    test_number, module_number = _extract_test_module_numbers(selected_test)
+    question_image_urls = {
+        question.number: _build_question_image_url(question)
+        for question in questions
+    }
+
+    return render_template(
+        "test.html",
+        test=selected_test,
+        test_number=test_number,
+        module_number=module_number,
+        student_name=student_name,
+        first_name=first_name,
+        last_name=last_name,
+        questions=questions,
+        question_image_urls=question_image_urls,
         multiple_choice_choices=MULTIPLE_CHOICE_CHOICES,
     )
 

@@ -93,6 +93,7 @@
       color: #151515;
     }
 
+    .scoring-form-grid input,
     .scoring-form-grid select {
       width: 100%;
       max-width: 100%;
@@ -108,6 +109,7 @@
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
+    .scoring-form-grid input:focus,
     .scoring-form-grid select:focus {
       outline: none;
       border-color: #c6a764;
@@ -123,6 +125,18 @@
       background-repeat: no-repeat;
     }
 
+    .scoring-form-grid .name-field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .scoring-form-grid .name-field-row .field {
+      width: 100%;
+      margin-bottom: 0;
+    }
+
     .scoring-form-grid .action-field {
       margin-top: 0;
       padding-top: 1.95rem;
@@ -130,6 +144,18 @@
       align-items: end;
       justify-content: flex-start;
       width: fit-content;
+    }
+
+    .scoring-form-grid .action-button-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .scoring-form-grid .action-field .action-button-row .start-answers-btn {
+      width: auto;
+      flex: 0 0 auto;
     }
 
     .scoring-form-grid .action-field .start-answers-btn {
@@ -144,6 +170,10 @@
 
       .scoring-form-grid {
         grid-template-columns: 1fr;
+      }
+
+      .scoring-form-grid .field {
+        width: 100%;
       }
 
       .scoring-form-grid .action-field {
@@ -161,9 +191,17 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .scoring-form-grid .action-field .start-answers-btn {
+      .scoring-form-grid .name-field-row {
+        grid-template-columns: 1fr;
+      }
+
+      .scoring-form-grid .action-field .action-button-row .start-answers-btn {
         width: 100%;
         min-width: 0;
+      }
+
+      .scoring-form-grid .action-button-row {
+        width: 100%;
       }
     }
   </style>
@@ -204,6 +242,30 @@
     {% if tests %}
       <form method="post" action="{{ url_for('dashboard') }}" class="scoring-form-grid">
         <div class="field">
+          <div class="name-field-row">
+            <div class="field">
+              <label for="first_name">First name</label>
+              <input
+                type="text"
+                name="first_name"
+                id="first_name"
+                value="{{ first_name }}"
+                required
+                autocomplete="given-name"
+              />
+            </div>
+            <div class="field">
+              <label for="last_name">Last name</label>
+              <input
+                type="text"
+                name="last_name"
+                id="last_name"
+                value="{{ last_name }}"
+                required
+                autocomplete="family-name"
+              />
+            </div>
+          </div>
           <label for="test_id">Choose test</label>
           <select name="test_id" id="test_id">
             {% for test in tests %}
@@ -217,8 +279,9 @@
           <div class="sqs-block" data-definition-name="website.components.button">
             <div class="sqs-block-content">
               <div class="sqs-block-button-container sqs-block-button-container--left">
-                <div class="sqs-stretched">
+                <div class="sqs-stretched action-button-row">
                   <button type="submit" class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Start entering answers</button>
+                  <button type="submit" formaction="{{ url_for('test') }}" class="start-answers-btn btn btn--border theme-btn--primary-inverse sqs-button-element--tertiary">Start Testing</button>
                 </div>
               </div>
             </div>

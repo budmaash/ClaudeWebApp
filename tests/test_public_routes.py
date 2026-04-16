@@ -33,6 +33,34 @@ def test_dashboard_accessible_without_login(client):
     with patch.object(app_module.question_bank, "available_tests", return_value=[MOCK_TEST]):
         response = client.get("/dashboard")
     assert response.status_code == 200
+    assert b'formaction="/test"' in response.data
+
+
+def test_dashboard_post_redirects_to_entry_with_submitted_name(client):
+    with patch.object(app_module.question_bank, "available_tests", return_value=[MOCK_TEST]), \
+         patch.object(app_module.question_bank, "get_test", return_value=MOCK_TEST):
+        response = client.post("/dashboard", data={
+            "test_id": "db_1_1_1",
+            "first_name": "Jane",
+            "last_name": "Doe",
+        })
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/entry?test_id=db_1_1_1&first_name=Jane&last_name=Doe"
+
+
+def test_test_mode_accessible_without_login(client):
+    with patch.object(app_module.question_bank, "get_test", return_value=MOCK_TEST), \
+         patch.object(app_module.question_bank, "questions_for", return_value=MOCK_QUESTIONS):
+        response = client.get(
+            "/test?test_id=db_1_1_1&first_name=Jane&last_name=Doe"
+        )
+    assert response.status_code == 200
+    assert b"Test 1" in response.data
+    assert b"Module 1" in response.data
+    assert b'name="q_1"' in response.data
+    assert b'name="q_2"' in response.data
+    assert b"/test-question-placeholder.png" in response.data
+    assert b"Generate score report" in response.data
 
 
 def test_entry_accessible_without_login(client):

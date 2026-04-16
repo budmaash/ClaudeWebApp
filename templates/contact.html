@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Contact — Hasan Tutoring{% endblock %}
+
+{% block content %}
+<style>
+  /* ----------------------------------------------------------------
+     Override the base template's .container constraints so the
+     contact hero and body sections can span full width with their
+     own padding.
+  ---------------------------------------------------------------- */
+  #page.container {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  /* ── Hero ── */
+  .ht-contact-hero {
+    background: var(--color-surface);
+    padding-top: clamp(12rem, 16vw, 15rem);
+    padding-bottom: clamp(2rem, 3vw, 2.5rem);
+    padding-left: var(--space-section-h);
+    padding-right: var(--space-section-h);
+    text-align: center;
+  }
+
+  .ht-contact-hero__inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+  }
+
+  .ht-eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .ht-eyebrow--crimson { color: var(--color-accent-crimson); }
+  .ht-eyebrow--gold    { color: var(--color-accent-gold); }
+
+  .ht-contact-hero__h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4.5vw, 2.75rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--color-text-dark);
+    margin: 0;
+  }
+
+  /* ── Flash messages ── */
+  .ht-contact-flash {
+    max-width: var(--content-wide);
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    border-radius: var(--radius-sm, 0.75rem);
+  }
+
+  .ht-contact-flash--success {
+    background: #e1f5ee;
+    color: #085041;
+    border: 1px solid #9FE1CB;
+  }
+
+  .ht-contact-flash--error {
+    background: #fcebeb;
+    color: #7c1f1f;
+    border: 1px solid #f7c1c1;
+  }
+
+  /* ── Body layout ── */
+  .ht-contact-body {
+    background: var(--color-surface);
+    padding: clamp(3rem, 6vw, 5rem) var(--space-section-h)
+             clamp(5rem, 10vw, 8rem);
+  }
+
+  .ht-contact-body__inner {
+    max-width: var(--content-wide);
+    margin: 0 auto;
+    display: flex;
+    gap: clamp(3rem, 7vw, 6rem);
+    align-items: flex-start;
+  }
+
+  .ht-contact-body__left  { flex: 0 0 300px; }
+  .ht-contact-body__right { flex: 1; }
+
+  /* ── Left column ── */
+  .ht-gold-rule {
+    width: 2.5rem;
+    height: 1px;
+    background: var(--color-accent-gold);
+    margin-bottom: 1.5rem;
+  }
+
+  .ht-contact-body__h2 {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--color-text-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+
+  .ht-contact-body__p {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 300;
+    color: var(--color-muted);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  .ht-contact-body__p--last { margin-bottom: 0; }
+
+  .ht-contact-details { margin-top: 2rem; }
+
+  .ht-contact-detail { margin-bottom: 1rem; }
+
+  .ht-contact-detail__label {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .ht-contact-detail__value {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: var(--color-text-dark);
+  }
+
+  .ht-contact-detail__link {
+    color: var(--color-text-dark);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-accent-gold);
+  }
+
+  /* ── Form ── */
+  .ht-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .ht-form-group { margin-bottom: 1.25rem; }
+
+  .ht-form-label {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .ht-form-input,
+  .ht-form-textarea {
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--color-text);
+    background: var(--color-surface-tint);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    padding: 0.75rem 1.25rem;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+  }
+
+  .ht-form-input:focus,
+  .ht-form-textarea:focus {
+    border-color: var(--color-accent-gold);
+    box-shadow: 0 0 0 3px var(--color-accent-gold-light);
+  }
+
+  .ht-form-textarea {
+    resize: vertical;
+    min-height: 140px;
+  }
+
+  .ht-btn--primary {
+    display: block;
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 0.85em 2.25em;
+    border-radius: var(--radius-button);
+    border: none;
+    background: var(--color-accent);
+    color: var(--color-text-light);
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .ht-btn--primary:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .ht-form-note {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: var(--color-muted);
+    text-align: center;
+    margin-top: 0.875rem;
+    margin-bottom: 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .ht-contact-body__inner {
+      flex-direction: column;
+    }
+
+    .ht-contact-body__left {
+      flex: none;
+      width: 100%;
+    }
+
+    .ht-form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="ht-contact-hero">
+  <div class="ht-contact-hero__inner">
+    <p class="ht-eyebrow ht-eyebrow--crimson">Get in touch</p>
+    <h1 class="ht-contact-hero__h1">Let's talk.</h1>
+  </div>
+</section>
+
+<!-- ============================================================
+     SUCCESS / ERROR MESSAGES
+     ============================================================ -->
+{% if success %}
+<div class="ht-contact-flash ht-contact-flash--success">
+  Message sent. I'll be in touch soon.
+</div>
+{% endif %}
+{% if error %}
+<div class="ht-contact-flash ht-contact-flash--error">
+  {{ error }}
+</div>
+{% endif %}
+
+<!-- ============================================================
+     TWO-COLUMN BODY
+     ============================================================ -->
+<section class="ht-contact-body">
+  <div class="ht-contact-body__inner">
+
+    <!-- LEFT — contact info -->
+    <div class="ht-contact-body__left">
+      <div class="ht-gold-rule" aria-hidden="true"></div>
+      <h2 class="ht-contact-body__h2">Reach out anytime</h2>
+      <p class="ht-contact-body__p">
+        Feel free to give me a shout anytime by filling out the form or
+        reaching out directly. I'll gladly answer any questions you have
+        about the ACT or SAT, when you should take them, or which one you
+        should focus on — without any pressure to purchase my services. I
+        can even get you some free practice materials.
+      </p>
+      <p class="ht-contact-body__p ht-contact-body__p--last">
+        I employ a very laid-back, no-pressure approach to my business.
+        Honest advice, always.
+      </p>
+
+      <div class="ht-contact-details">
+        <div class="ht-contact-detail">
+          <span class="ht-contact-detail__label">Phone</span>
+          <a href="tel:9132100611"
+             class="ht-contact-detail__value ht-contact-detail__link">
+            913.210.0611
+          </a>
+        </div>
+        <div class="ht-contact-detail">
+          <span class="ht-contact-detail__label">Email</span>
+          <a href="mailto:Majid@HasanTutoring.com"
+             class="ht-contact-detail__value ht-contact-detail__link">
+            Majid@HasanTutoring.com
+          </a>
+        </div>
+        <div class="ht-contact-detail">
+          <span class="ht-contact-detail__label">Location</span>
+          <span class="ht-contact-detail__value">
+            Overland Park &amp; Kansas City, KS
+          </span>
+        </div>
+      </div>
+    </div><!-- /.ht-contact-body__left -->
+
+    <!-- RIGHT — contact form -->
+    <div class="ht-contact-body__right">
+      <form class="ht-contact-form" method="POST" action="/contact" novalidate>
+
+        <div class="ht-form-row">
+          <div class="ht-form-group">
+            <label class="ht-form-label" for="first_name">First name</label>
+            <input class="ht-form-input"
+                   type="text" id="first_name" name="first_name"
+                   required autocomplete="given-name"
+                   value="{{ values.first_name if values else '' }}">
+          </div>
+          <div class="ht-form-group">
+            <label class="ht-form-label" for="last_name">Last name</label>
+            <input class="ht-form-input"
+                   type="text" id="last_name" name="last_name"
+                   autocomplete="family-name"
+                   value="{{ values.last_name if values else '' }}">
+          </div>
+        </div>
+
+        <div class="ht-form-group">
+          <label class="ht-form-label" for="email">Email address</label>
+          <input class="ht-form-input"
+                 type="email" id="email" name="email"
+                 required autocomplete="email"
+                 value="{{ values.email if values else '' }}">
+        </div>
+
+        <div class="ht-form-group">
+          <label class="ht-form-label" for="subject">Subject</label>
+          <input class="ht-form-input"
+                 type="text" id="subject" name="subject"
+                 value="{{ values.subject if values else '' }}">
+        </div>
+
+        <div class="ht-form-group">
+          <label class="ht-form-label" for="message">Message</label>
+          <textarea class="ht-form-textarea"
+                    id="message" name="message"
+                    required rows="6">{{- values.message if values else '' -}}</textarea>
+        </div>
+
+        <button type="submit" class="ht-btn ht-btn--primary">
+          Send message
+        </button>
+        <p class="ht-form-note">No pressure, ever. I'll respond personally.</p>
+
+      </form>
+    </div><!-- /.ht-contact-body__right -->
+
+  </div><!-- /.ht-contact-body__inner -->
+</section>
+
+{% endblock %}

@@ -12,7 +12,10 @@ from functools import wraps
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
+import html as html_module
+
 import psycopg2
+import resend
 from psycopg2 import sql
 from authlib.integrations.flask_client import OAuth
 from flask_shell_config import create_shell_config
@@ -1004,6 +1007,68 @@ def inject_globals():
             "site_title": "SAT Math Score Tool",
         }),
     }
+
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "GET":
+        return render_template("contact.html", success=False, error=None, values=None)
+
+    # --- POST ---
+    first_name = request.form.get("first_name", "").strip()
+    last_name  = request.form.get("last_name",  "").strip()
+    email      = request.form.get("email",      "").strip()
+    subject    = request.form.get("subject",    "").strip()
+    message    = request.form.get("message",    "").strip()
+
+    values = {
+        "first_name": first_name,
+        "last_name":  last_name,
+        "email":      email,
+        "subject":    subject,
+        "message":    message,
+    }
+
+    if not first_name or not email or not message:
+        return render_template(
+            "contact.html",
+            success=False,
+            error="Please fill in all required fields.",
+            values=values,
+        )
+
+    try:
+        resend.api_key = os.environ.get("RESEND_API_KEY")
+
+        # TODO: Replace the "from" address with
+        #   "HasanTutoring Contact <contact@hasantutoring.com>"
+        # once hasantutoring.com is verified in the Resend dashboard.
+        # Until then, Resend's sandbox sender is used.
+        params = {
+            "from":     "onboarding@resend.dev",
+            "to":       ["a.majid.hasan@gmail.com"],
+            "reply_to": email,
+            "subject":  f"[HasanTutoring.com] {subject or 'New message'}",
+            "html": (
+                f"<p><strong>From:</strong> {html_module.escape(first_name)} "
+                f"{html_module.escape(last_name)}</p>"
+                f"<p><strong>Email:</strong> {html_module.escape(email)}</p>"
+                f"<p><strong>Subject:</strong> {html_module.escape(subject)}</p>"
+                f"<hr>"
+                f"<p>{html_module.escape(message).replace(chr(10), '<br>')}</p>"
+            ),
+        }
+        resend.Emails.send(params)
+    except Exception as exc:
+        app.logger.error("Resend error on /contact POST: %s", exc)
+        return render_template(
+            "contact.html",
+            success=False,
+            error="Something went wrong. Please try again or email Majid@HasanTutoring.com directly.",
+            values=values,
+        )
+
+    return render_template("contact.html", success=True, error=None, values=None)
 
 
 if __name__ == "__main__":

@@ -94,12 +94,12 @@ def test_test_mode_uses_r2_presigned_question_images(client):
     assert b"https://r2.example/question-2.png?signature=def" in response.data
     mock_r2_client.generate_presigned_url.assert_any_call(
         "get_object",
-        Params={"Bucket": "mathpapertestimages", "Key": "1,1,1,1.png"},
+        Params={"Bucket": "mathpapertestimages", "Key": "1_1_1_1.png"},
         ExpiresIn=app_module.R2_PRESIGNED_URL_SECONDS,
     )
     mock_r2_client.generate_presigned_url.assert_any_call(
         "get_object",
-        Params={"Bucket": "mathpapertestimages", "Key": "1,1,1,2.png"},
+        Params={"Bucket": "mathpapertestimages", "Key": "1_1_1_2.png"},
         ExpiresIn=app_module.R2_PRESIGNED_URL_SECONDS,
     )
 

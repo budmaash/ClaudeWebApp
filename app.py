@@ -36,7 +36,7 @@ DB_CONFIG = {
     "dbname": os.environ.get("DB_NAME", "WebApp"),
 }
 MULTIPLE_CHOICE_CHOICES = ("A", "B", "C", "D")
-DEFAULT_R2_QUESTION_IMAGE_KEY_TEMPLATE = "{test_id},{section_id},{module_id},{question_number}.png"
+DEFAULT_R2_QUESTION_IMAGE_KEY_TEMPLATE = "{section_id}_{test_id}_{module_id}_{question_number}.png"
 _R2_CLIENT_CACHE = {}
 
 

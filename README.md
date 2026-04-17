@@ -130,9 +130,9 @@ The test-mode page loads question images from a Cloudflare R2 bucket when the R2
 | `R2_SECRET_ACCESS_KEY` | *(none)* | R2 secret access key |
 | `R2_BUCKET` | *(none)* | R2 bucket containing question images |
 | `R2_PRESIGNED_URL_SECONDS` | `3600` | Signed image URL lifetime in seconds |
-| `R2_QUESTION_IMAGE_KEY_TEMPLATE` | `{test_id},{section_id},{module_id},{question_number}.png` | Object key format for question images |
+| `R2_QUESTION_IMAGE_KEY_TEMPLATE` | `{section_id}_{test_id}_{module_id}_{question_number}.png` | Object key format for question images |
 
-The default key template matches object names like `1,1,1,1.png`, where the values are test ID, section ID, module ID, and question number. If your bucket uses folders or a different naming convention, set `R2_QUESTION_IMAGE_KEY_TEMPLATE`; available placeholders are `{test_id}`, `{section_id}`, `{module_id}`, `{question_number}`, and `{question_id}`.
+The default key template matches object names like `1_2_1_10.png`, where the values are section ID, test ID, module ID, and question number. If your bucket uses folders or a different naming convention, set `R2_QUESTION_IMAGE_KEY_TEMPLATE`; available placeholders are `{test_id}`, `{section_id}`, `{module_id}`, `{question_number}`, and `{question_id}`.
 
 ## How scoring works
 

@@ -7,7 +7,7 @@
         <div class="header-title-nav-wrapper">
           <div class="header-title" data-animation-role="header-element">
             <div class="header-title-logo">
-              <a href="https://www.hasantutoring.com/" data-animation-role="header-element">
+              <a href="/" data-animation-role="header-element">
                 <img
                   src="{{ url_for('static', filename='ss_homepage/HASAN+TUTORING-logo.png') }}"
                   alt="Expert Tutoring for the ACT and SAT"
@@ -21,14 +21,14 @@
             <div class="header-nav-wrapper">
               <nav class="header-nav-list">
                 <div class="header-nav-item header-nav-item--collection header-nav-item--active header-nav-item--homepage">
-                  <a href="https://www.hasantutoring.com/" aria-current="page">Start Here</a>
+                  <a href="/" aria-current="page">Start Here</a>
                 </div>
-                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/tests">Test Info</a></div>
-                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/act-vs-sat">ACT vs. SAT</a></div>
-                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/test-prep-options">Why Tutoring?</a></div>
-                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/about-me">About Me</a></div>
-                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/faqs">FAQs</a></div>
-                <div class="header-nav-item header-nav-item--collection"><a href="https://www.hasantutoring.com/blog">Blog</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="/tests">Test Info</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="/act-vs-sat">ACT vs. SAT</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="/test-prep-options">Why Tutoring?</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="/about-me">About Me</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="/faqs">FAQs</a></div>
+                <div class="header-nav-item header-nav-item--collection"><a href="/blog">Blog</a></div>
               </nav>
             </div>
           </div>
@@ -51,7 +51,7 @@
         <div class="header-title-nav-wrapper">
           <div class="header-title">
             <div class="header-title-logo">
-              <a href="https://www.hasantutoring.com/">
+              <a href="/">
                 <img
                   src="{{ url_for('static', filename='ss_homepage/HASAN+TUTORING-logo.png') }}"
                   alt="Expert Tutoring for the ACT and SAT"
@@ -86,13 +86,13 @@
         <div data-folder="root" class="header-menu-nav-folder header-menu-nav-folder--active">
           <div class="header-menu-nav-folder-content">
             <div class="header-menu-nav-wrapper">
-              <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active header-menu-nav-item--homepage"><a href="https://www.hasantutoring.com/"><div class="header-menu-nav-item-content">Start Here</div></a></div>
-              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/tests"><div class="header-menu-nav-item-content">Test Info</div></a></div>
-              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/act-vs-sat"><div class="header-menu-nav-item-content">ACT vs. SAT</div></a></div>
-              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/test-prep-options"><div class="header-menu-nav-item-content">Why Tutoring?</div></a></div>
-              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/about-me"><div class="header-menu-nav-item-content">About Me</div></a></div>
-              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/faqs"><div class="header-menu-nav-item-content">FAQs</div></a></div>
-              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="https://www.hasantutoring.com/blog"><div class="header-menu-nav-item-content">Blog</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active header-menu-nav-item--homepage"><a href="/"><div class="header-menu-nav-item-content">Start Here</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="/tests"><div class="header-menu-nav-item-content">Test Info</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="/act-vs-sat"><div class="header-menu-nav-item-content">ACT vs. SAT</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="/test-prep-options"><div class="header-menu-nav-item-content">Why Tutoring?</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="/about-me"><div class="header-menu-nav-item-content">About Me</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="/faqs"><div class="header-menu-nav-item-content">FAQs</div></a></div>
+              <div class="container header-menu-nav-item header-menu-nav-item--collection"><a href="/blog"><div class="header-menu-nav-item-content">Blog</div></a></div>
             </div>
             <div class="user-accounts-link header-menu-nav-item header-nav-item--collection customerAccountLoginMobile loaded">
               <a class="user-accounts-text-link header-nav-item" href="{{ url_for('logout') if is_authenticated else auth0_login_url }}">

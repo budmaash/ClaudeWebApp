@@ -37,6 +37,8 @@ This project provides a lightweight web application for entering student respons
 
 2. **Configure the database** (see below)
 
+   To load test-mode question images from Cloudflare R2, also configure the R2 variables described below.
+
 3. **Run the development server**
 
    ```bash
@@ -116,6 +118,21 @@ CREATE TABLE IF NOT EXISTS responses (
 ### How tests are discovered
 
 Each distinct `(test_id, section_id, module_id)` combination present in the `questions` table is surfaced as a selectable test in the UI. The display name is assembled from the corresponding `tests`, `sections`, and `modules` rows (e.g. `Digital Paper Test 1 Math Module 1`).
+
+## Question image storage
+
+The test-mode page loads question images from a Cloudflare R2 bucket when the R2 environment variables are present. The app generates temporary signed URLs using the S3-compatible R2 endpoint, so the bucket does not need to be public.
+
+| Variable | Default | Description |
+|---|---|---|
+| `R2_ACCOUNT_ID` | *(none)* | Cloudflare account ID for the R2 endpoint |
+| `R2_ACCESS_KEY_ID` | *(none)* | R2 access key ID |
+| `R2_SECRET_ACCESS_KEY` | *(none)* | R2 secret access key |
+| `R2_BUCKET` | *(none)* | R2 bucket containing question images |
+| `R2_PRESIGNED_URL_SECONDS` | `3600` | Signed image URL lifetime in seconds |
+| `R2_QUESTION_IMAGE_KEY_TEMPLATE` | `{test_id},{section_id},{module_id},{question_number}.png` | Object key format for question images |
+
+The default key template matches object names like `1,1,1,1.png`, where the values are test ID, section ID, module ID, and question number. If your bucket uses folders or a different naming convention, set `R2_QUESTION_IMAGE_KEY_TEMPLATE`; available placeholders are `{test_id}`, `{section_id}`, `{module_id}`, `{question_number}`, and `{question_id}`.
 
 ## How scoring works
 

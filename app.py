@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 
 import html as html_module
 
+import boto3
 import psycopg2
 import resend
 from psycopg2 import sql
@@ -35,6 +36,18 @@ DB_CONFIG = {
     "dbname": os.environ.get("DB_NAME", "WebApp"),
 }
 MULTIPLE_CHOICE_CHOICES = ("A", "B", "C", "D")
+DEFAULT_R2_QUESTION_IMAGE_KEY_TEMPLATE = "{test_id},{section_id},{module_id},{question_number}.png"
+_R2_CLIENT_CACHE = {}
+
+
+def _int_env(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, str(default)))
+    except ValueError:
+        return default
+
+
+R2_PRESIGNED_URL_SECONDS = _int_env("R2_PRESIGNED_URL_SECONDS", 3600)
 
 
 @dataclass
@@ -126,8 +139,77 @@ def _build_question_link_prefix(test: TestDefinition) -> Optional[str]:
     return f"https://www.hasantutoring.com/math-test-{test_number}-module-{module_number}/v/question"
 
 
-def _build_question_image_url(question: Question) -> str:
-    return url_for("test_question_placeholder")
+def _r2_config() -> Optional[Dict[str, str]]:
+    config = {
+        "account_id": os.environ.get("R2_ACCOUNT_ID", "").strip(),
+        "access_key_id": os.environ.get("R2_ACCESS_KEY_ID", "").strip(),
+        "secret_access_key": os.environ.get("R2_SECRET_ACCESS_KEY", "").strip(),
+        "bucket": os.environ.get("R2_BUCKET", "").strip(),
+    }
+    if all(config.values()):
+        return config
+    if any(config.values()):
+        app.logger.warning("R2 is partially configured; falling back to local question placeholder images.")
+    return None
+
+
+def _r2_client(config: Dict[str, str]):
+    cache_key = (
+        config["account_id"],
+        config["access_key_id"],
+        config["secret_access_key"],
+    )
+    if cache_key not in _R2_CLIENT_CACHE:
+        _R2_CLIENT_CACHE[cache_key] = boto3.client(
+            "s3",
+            endpoint_url=f"https://{config['account_id']}.r2.cloudflarestorage.com",
+            aws_access_key_id=config["access_key_id"],
+            aws_secret_access_key=config["secret_access_key"],
+            region_name="auto",
+        )
+    return _R2_CLIENT_CACHE[cache_key]
+
+
+def _build_question_image_key(test: TestDefinition, question: Question) -> Optional[str]:
+    if test.db_metadata is None:
+        return None
+
+    template = os.environ.get(
+        "R2_QUESTION_IMAGE_KEY_TEMPLATE",
+        DEFAULT_R2_QUESTION_IMAGE_KEY_TEMPLATE,
+    ).strip()
+    try:
+        return template.format(
+            test_id=test.db_metadata.test_id,
+            section_id=test.db_metadata.section_id,
+            module_id=test.db_metadata.module_id,
+            question_number=question.number,
+            question_id=question.db_question_id or "",
+        ).lstrip("/")
+    except KeyError as exc:
+        app.logger.warning("Invalid R2_QUESTION_IMAGE_KEY_TEMPLATE placeholder: %s", exc)
+        return None
+
+
+def _build_question_image_url(test: TestDefinition, question: Question) -> str:
+    placeholder_url = url_for("test_question_placeholder")
+    config = _r2_config()
+    if config is None:
+        return placeholder_url
+
+    image_key = _build_question_image_key(test, question)
+    if not image_key:
+        return placeholder_url
+
+    try:
+        return _r2_client(config).generate_presigned_url(
+            "get_object",
+            Params={"Bucket": config["bucket"], "Key": image_key},
+            ExpiresIn=R2_PRESIGNED_URL_SECONDS,
+        )
+    except Exception as exc:
+        app.logger.warning("Failed to generate R2 question image URL for %s: %s", image_key, exc)
+        return placeholder_url
 
 
 class QuestionBank:
@@ -926,7 +1008,7 @@ def test():
     questions = question_bank.questions_for(test_id)
     test_number, module_number = _extract_test_module_numbers(selected_test)
     question_image_urls = {
-        question.number: _build_question_image_url(question)
+        question.number: _build_question_image_url(selected_test, question)
         for question in questions
     }
 

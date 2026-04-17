@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import app as app_module
 from app import app as flask_app, TestDefinition, DatabaseTestMetadata, Question
 
@@ -49,7 +49,13 @@ def test_dashboard_post_redirects_to_entry_with_submitted_name(client):
 
 
 def test_test_mode_accessible_without_login(client):
-    with patch.object(app_module.question_bank, "get_test", return_value=MOCK_TEST), \
+    with patch.dict(app_module.os.environ, {
+            "R2_ACCOUNT_ID": "",
+            "R2_ACCESS_KEY_ID": "",
+            "R2_SECRET_ACCESS_KEY": "",
+            "R2_BUCKET": "",
+        }), \
+         patch.object(app_module.question_bank, "get_test", return_value=MOCK_TEST), \
          patch.object(app_module.question_bank, "questions_for", return_value=MOCK_QUESTIONS):
         response = client.get(
             "/test?test_id=db_1_1_1&first_name=Jane&last_name=Doe"
@@ -61,6 +67,41 @@ def test_test_mode_accessible_without_login(client):
     assert b'name="q_2"' in response.data
     assert b"/test-question-placeholder.png" in response.data
     assert b"Generate score report" in response.data
+
+
+def test_test_mode_uses_r2_presigned_question_images(client):
+    mock_r2_client = Mock()
+    mock_r2_client.generate_presigned_url.side_effect = [
+        "https://r2.example/question-1.png?signature=abc",
+        "https://r2.example/question-2.png?signature=def",
+    ]
+
+    with patch.dict(app_module.os.environ, {
+            "R2_ACCOUNT_ID": "account-id",
+            "R2_ACCESS_KEY_ID": "access-key",
+            "R2_SECRET_ACCESS_KEY": "secret-key",
+            "R2_BUCKET": "mathpapertestimages",
+        }), \
+         patch.object(app_module, "_r2_client", return_value=mock_r2_client), \
+         patch.object(app_module.question_bank, "get_test", return_value=MOCK_TEST), \
+         patch.object(app_module.question_bank, "questions_for", return_value=MOCK_QUESTIONS):
+        response = client.get(
+            "/test?test_id=db_1_1_1&first_name=Jane&last_name=Doe"
+        )
+
+    assert response.status_code == 200
+    assert b"https://r2.example/question-1.png?signature=abc" in response.data
+    assert b"https://r2.example/question-2.png?signature=def" in response.data
+    mock_r2_client.generate_presigned_url.assert_any_call(
+        "get_object",
+        Params={"Bucket": "mathpapertestimages", "Key": "1,1,1,1.png"},
+        ExpiresIn=app_module.R2_PRESIGNED_URL_SECONDS,
+    )
+    mock_r2_client.generate_presigned_url.assert_any_call(
+        "get_object",
+        Params={"Bucket": "mathpapertestimages", "Key": "1,1,1,2.png"},
+        ExpiresIn=app_module.R2_PRESIGNED_URL_SECONDS,
+    )
 
 
 def test_entry_accessible_without_login(client):
